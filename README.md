@@ -11,4 +11,21 @@ Luigi Blueprint uses ini configuration style files that define each individual t
 * Execution of Local commands and scripts
 * Execution of Remote commands and and scripts 
 
-The above wrappers allows you to organize your existing SQL queries, commands and scripts to organized under a configuration file, achieving the same ETL flow as you had but with the additional functionality of effortless executing tasks in parallel (when is possible)
+The above wrappers allows you to organize your existing SQL queries, commands and scripts to organized under a configuration file, achieving the same ETL flow as you had using a traditional shell script but with the additional functionality of effortless executing tasks in parallel (when is possible)
+
+## Examples
+### Executing a single local task
+__Save the following file as: single_exec.cfg__
+```
+[BUILD]
+TASKS: [LOCAL_TASK1()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[LOCAL_TASK1()]
+TYPE:LOCAL_TASK
+COMMAND: ls -ltrh
+SUCCESS_EXIT_CODE: 0
+RESULTS: ./single_local_task/LOCAL_TASK1.txt
+CLEANUP: True
+```
