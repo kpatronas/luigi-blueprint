@@ -143,4 +143,32 @@ Explaination of the configuration
 ```
 TASKS: [LOCAL_TASK1(),LOCAL_TASK2()] <--- Those two tasks will be executed on parallel.
 ```
-This kind of execution does not ensure the order of execution which can be crucial in the case that the execution of one task is depended on the execution of another
+This kind of execution does not ensure the order of execution which can be crucial in the case that the execution of one task is depended on the execution of another.
+
+### Executing three local tasks, one is depended by the successfull execution of the two
+Create directory three_local_tasks
+```
+mkdir three_local_tasks
+```
+Save the following file as: three_local_tasks.cfg
+```
+[BUILD]
+TASKS: [LOCAL_TASK1(),LOCAL_TASK2()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[LOCAL_TASK1()]
+TYPE:LOCAL_TASK
+COMMAND: ls -ltrh
+SUCCESS_EXIT_CODE: 0
+RESULTS: ./two_local_parallel_tasks/LOCAL_TASK1.txt
+CLEANUP: True
+
+[LOCAL_TASK2()]
+TYPE:LOCAL_TASK
+COMMAND: df -h
+SUCCESS_EXIT_CODE: 0
+RESULTS: ./two_local_parallel_tasks/LOCAL_TASK2.txt
+CLEANUP: True
+```
+Execute the blueprint
