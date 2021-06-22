@@ -377,3 +377,73 @@ CREDS: MYPASSWORD
 USE_PROXY: True  <--- If True will use whatever PROXY is set bellow
 PROXY: GW1()
 ```
+### Executing a database task
+To execute this example you will need a database server, in my case i have a maria db installed on localhost
+Save the following file as db_remote.cfg, the file that contains the query that i want to execute is data.sql
+```
+[BUILD]
+TASKS: [DB1()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[MARIADB1]
+TYPE:   DB_CONF
+ENGINE: mysql
+CREDS:  DB1_CREDS
+DBHOST: 127.0.0.1
+DBNAME: TEST
+DBPORT: 3306
+
+[DB1_CREDS]
+TYPE: CREDS
+USER: test_user
+PASS: mypass1
+
+[DB1()]
+RESULTS:      data.csv
+CLEANUP:      True
+TYPE:         DB_TASK
+RESULTS_TYPE: csv
+QUERY:        data.sql
+DB:           MARIADB1
+```
+Executing the blueprint
+```
+./blue.py -b db_blueprint.cfg
+WARN - Task "DB1_CREDS" Has no "KEY" parameter, creating.
+WARN - Task "DB1_CREDS" "KEY" parameter is empty, defaulting to "False"
+WARN - Task "DB1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "DB1()" "REQUIRES" parameter is empty, defaulting to "[]"
+WARN - Task "DB1()" Has no "USE_PROXY" parameter, creating.
+WARN - Task "DB1()" "USE_PROXY" parameter is empty, defaulting to "False"
+WARN - Task "DB1()" Has no "PROXY" parameter, creating.
+WARN - Task "DB1()" "PROXY" parameter is empty, defaulting to "False"
+INFO - Task: "DB1" of Type: "DB_TASK" Previous result: "data.csv" Deleted.
+INFO - Task: "DB1" of Type: "DB_TASK" Created.
+INFO - Task: DB1 - host: 127.0.0.1 Executing data.sql
+INFO - END.
+```
+Explaination of the parameters
+```
+[MARIADB1]      <--- This is a DB_CONF section
+TYPE:   DB_CONF
+ENGINE: mysql     <--- The DB engine to use. it must be the same as the libary of SQLAlchemy 
+CREDS:  DB1_CREDS <-- credentials to use
+DBHOST: 127.0.0.1 <-- Database host
+DBNAME: TEST      <-- Database name
+DBPORT: 3306      <-- Database port
+
+[DB1_CREDS]
+TYPE: CREDS
+USER: test_user
+PASS: mypass1
+
+[DB1()]
+RESULTS:      data.csv
+CLEANUP:      True
+TYPE:         DB_TASK  <-- Task is DB_TASK
+RESULTS_TYPE: csv      <-- The output will be csv, it could be xlsx also
+QUERY:        data.sql <-- the query to execute
+DB:           MARIADB1 <-- The database to connect
+```
+### Executing a DB task over an SSH proxy
