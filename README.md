@@ -96,3 +96,29 @@ The contents of ./single_local_task/LOCAL_TASK1.txt.stderr are
 ```
 /bin/sh: 1: BORN2FAIL: not found
 ```
+### Executing two local tasks in parallel
+Create directory two_local_parallel_tasks
+```
+mkdir two_local_parallel_tasks
+```
+Save the following file as: two_exec.cfg
+```
+[BUILD]
+TASKS: [LOCAL_TASK1(),LOCAL_TASK2()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[LOCAL_TASK1()]
+TYPE:LOCAL_TASK
+COMMAND: ls -ltrh
+SUCCESS_EXIT_CODE: 0
+RESULTS: ./two_local_parallel_tasks/LOCAL_TASK1.txt
+CLEANUP: True
+
+[LOCAL_TASK2()]
+TYPE:LOCAL_TASK
+COMMAND: df -h
+SUCCESS_EXIT_CODE: 0
+RESULTS: ./two_local_parallel_tasks/LOCAL_TASK2.txt
+CLEANUP: True
+```
