@@ -122,3 +122,25 @@ SUCCESS_EXIT_CODE: 0
 RESULTS: ./two_local_parallel_tasks/LOCAL_TASK2.txt
 CLEANUP: True
 ```
+Execute the blueprint
+```
+./blue.py -b two_exec.cfg
+WARN - Task "LOCAL_TASK1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK1()" "REQUIRES" parameter is empty, defaulting to "[]"
+WARN - Task "LOCAL_TASK2()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK2()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Previous result: "./two_local_parallel_tasks/LOCAL_TASK1.txt" Deleted.
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created.
+INFO - Task: "LOCAL_TASK2" of Type: "LOCAL_TASK" Previous result: "./two_local_parallel_tasks/LOCAL_TASK2.txt" Deleted.
+INFO - Task: "LOCAL_TASK2" of Type: "LOCAL_TASK" Created.
+INFO - Task: LOCAL_TASK1 - Starting Execution.
+INFO - Task: LOCAL_TASK2 - Starting Execution.
+INFO - Task: LOCAL_TASK1 - Succedeed with exit code: 0 check ./two_local_parallel_tasks/LOCAL_TASK1.txt.
+INFO - Task: LOCAL_TASK2 - Succedeed with exit code: 0 check ./two_local_parallel_tasks/LOCAL_TASK2.txt.
+INFO - END
+```
+Explaination of the configuration
+```
+TASKS: [LOCAL_TASK1(),LOCAL_TASK2()] <--- Those two tasks will be executed on parallel.
+```
+This kind of execution does not ensure the order of execution which can be crucial in the case that the execution of one task is depended on the execution of another
