@@ -414,13 +414,10 @@ WARN - Task "DB1_CREDS" Has no "KEY" parameter, creating.
 WARN - Task "DB1_CREDS" "KEY" parameter is empty, defaulting to "False"
 WARN - Task "DB1()" Has no "REQUIRES" parameter, creating.
 WARN - Task "DB1()" "REQUIRES" parameter is empty, defaulting to "[]"
-WARN - Task "DB1()" Has no "USE_PROXY" parameter, creating.
-WARN - Task "DB1()" "USE_PROXY" parameter is empty, defaulting to "False"
-WARN - Task "DB1()" Has no "PROXY" parameter, creating.
-WARN - Task "DB1()" "PROXY" parameter is empty, defaulting to "False"
 INFO - Task: "DB1" of Type: "DB_TASK" Previous result: "data.csv" Deleted.
 INFO - Task: "DB1" of Type: "DB_TASK" Created.
-INFO - Task: DB1 - host: 127.0.0.1 Executing data.sql
+INFO - Task: DB1 - host: 127.0.0.1 Preparing to execute  data.sql
+INFO - Executing task: "DB1()" .
 INFO - END.
 ```
 Explaination of the parameters
@@ -447,3 +444,166 @@ QUERY:        data.sql <-- the query to execute
 DB:           MARIADB1 <-- The database to connect
 ```
 ### Executing a DB task over an SSH proxy
+Change the previous file to
+```
+[BUILD]
+TASKS: [DB1()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[MYPASSWORD]
+TYPE: CREDS
+USER: kpatronas
+PASS: mypassword
+KEY: /home/kpatronas/.ssh/id_rsa.pub
+
+[GW1()]
+TYPE: SSH_PROXY
+HOST: 127.0.0.1
+PORT: 22
+CREDS: MYPASSWORD
+
+[MARIADB1]
+TYPE:   DB_CONF
+ENGINE: mysql
+CREDS:  DB1_CREDS
+DBHOST: 127.0.0.1
+DBNAME: TEST
+DBPORT: 3306
+
+[DB1_CREDS]
+TYPE: CREDS
+USER: test_user
+PASS: mypass1
+
+[DB1()]
+RESULTS:      data.csv
+CLEANUP:      True
+TYPE:         DB_TASK
+RESULTS_TYPE: csv
+QUERY:        data.sql
+DB:           MARIADB1
+USE_PROXY:    True
+PROXY:        GW1()
+```
+Explaination of the parameters
+```
+[DB1()]
+RESULTS:      data.csv
+CLEANUP:      True
+TYPE:         DB_TASK
+RESULTS_TYPE: csv
+QUERY:        data.sql
+DB:           MARIADB1
+USE_PROXY:    True  <-- If True use a proxy
+PROXY:        GW1() <-- Which Proxy to create an SSH tunnel
+```
+Executing the query
+```
+WARN - Task "DB1_CREDS" Has no "KEY" parameter, creating.
+WARN - Task "DB1_CREDS" "KEY" parameter is empty, defaulting to "False"
+WARN - Task "DB1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "DB1()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "DB1" of Type: "DB_TASK" Previous result: "data.csv" Deleted.
+INFO - Task: "DB1" of Type: "DB_TASK" Created.
+INFO - Task: DB1 - host: 127.0.0.1 Preparing to execute  data.sql
+INFO - Connect to Proxy: "127.0.0.1".
+INFO - Executing task: "DB1()" .
+INFO - END.
+```
+### Combine a local task, a remote task and a DB task
+In this example the following are done
+LOCAL_TASK_1() Starts executing but... REMOTE_TASK_1() needs to be executed first... BUT... DB1() needs to be executed first
+So the execution starts from DB1 which does a query and stores results to a CSV file
+Then REMOTE_TASK_1 is executed with this command "cat /home/kpatronas/examples/data.csv | grep -v counter" and stdout is saved to /home/kpatronas/examples/data1.csv
+And finally LOCAL_TASK_1() is executed which just counts the number of lines of the previous generated file and stdout is saved to /home/kpatronas/examples/sum.txt
+
+Save the following file as full_test.cfg
+```
+[BUILD]
+TASKS: [LOCAL_TASK_1()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[MYPASSWORD]
+TYPE: CREDS
+USER: kpatronas
+PASS: mypassword
+KEY: /home/kpatronas/.ssh/id_rsa.pub
+
+[GW1()]
+TYPE: SSH_PROXY
+HOST: 127.0.0.1
+PORT: 22
+CREDS: MYPASSWORD
+
+[MARIADB1]
+TYPE:   DB_CONF
+ENGINE: mysql
+CREDS:  DB1_CREDS
+DBHOST: 127.0.0.1
+DBNAME: TEST
+DBPORT: 3306
+
+[DB1_CREDS]
+TYPE: CREDS
+USER: test_user
+PASS: mypass1
+
+[DB1()]
+RESULTS:      data.csv
+CLEANUP:      True
+TYPE:         DB_TASK
+RESULTS_TYPE: csv
+QUERY:        data.sql
+DB:           MARIADB1
+USE_PROXY:    True
+PROXY:        GW1()
+
+[REMOTE_TASK_1()]
+RESULTS: /home/kpatronas/examples/data1.csv
+SUCCESS_EXIT_CODE: 0
+REQUIRES: [DB1()]
+TYPE:REMOTE_TASK
+COMMAND: cat /home/kpatronas/examples/data.csv | grep -v counter
+CLEANUP: True
+HOST: 127.0.0.1
+CREDS: MYPASSWORD
+USE_PROXY: False
+PROXY: GW1()
+
+[LOCAL_TASK_1()]
+RESULTS: /home/kpatronas/examples/sum.txt
+REQUIRES: [REMOTE_TASK_1()]
+SUCCESS_EXIT_CODE: 0
+TYPE:LOCAL_TASK
+COMMAND: cat /home/kpatronas/examples/data1.csv | wc -l
+CLEANUP: True
+```
+Output:
+```
+./blue.py -b db_blueprint.cfg
+WARN - Task "REMOTE_TASK_1()" Has no "PORT" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "PORT" parameter is empty, defaulting to "22"
+WARN - Task "REMOTE_TASK_1()" Has no "TIMEOUT" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "TIMEOUT" parameter is empty, defaulting to "10"
+WARN - Task "DB1_CREDS" Has no "KEY" parameter, creating.
+WARN - Task "DB1_CREDS" "KEY" parameter is empty, defaulting to "False"
+WARN - Task "DB1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "DB1()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "DB1" of Type: "DB_TASK" Previous result: "data.csv" Deleted.
+INFO - Task: "DB1" of Type: "DB_TASK" Created.
+INFO - Task: "REMOTE_TASK_1" of Type: "REMOTE_TASK" Previous result: "/home/kpatronas/examples/data1.csv" Deleted.
+INFO - Task: "REMOTE_TASK_1" of Type: "REMOTE_TASK" Created.
+INFO - Task: "LOCAL_TASK_1" of Type: "LOCAL_TASK" Previous result: "/home/kpatronas/examples/sum.txt" Deleted.
+INFO - Task: "LOCAL_TASK_1" of Type: "LOCAL_TASK" Created.
+INFO - Task: DB1 - host: 127.0.0.1 Preparing to execute  data.sql
+INFO - Connect to Proxy: "127.0.0.1".
+INFO - Executing task: "DB1()" .
+INFO - Task: "REMOTE_TASK_1" - SSH Connect to host: "127.0.0.1".
+INFO - Task: "REMOTE_TASK_1" - host: "127.0.0.1 Executing".
+INFO - Task: REMOTE_TASK_1 - Succedeed with exit code: 0 check /home/kpatronas/examples/data1.csv.
+INFO - Task: LOCAL_TASK_1 - Starting Execution.
+INFO - Task: LOCAL_TASK_1 - Succedeed with exit code: 0 check /home/kpatronas/examples/sum.txt.
+INFO - END.
+```
