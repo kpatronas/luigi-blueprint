@@ -15,6 +15,10 @@ The above wrappers allows you to organize your existing SQL queries, commands an
 
 ## Examples
 ### Executing a single local task
+Create directory single_local_task
+```
+mkdir single_local_task
+```
 __Save the following file as: single_exec.cfg__
 ```
 [BUILD]
