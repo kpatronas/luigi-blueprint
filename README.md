@@ -153,22 +153,30 @@ mkdir three_local_tasks
 Save the following file as: three_local_tasks.cfg
 ```
 [BUILD]
-TASKS: [LOCAL_TASK1(),LOCAL_TASK2()]
+TASKS: [LOCAL_TASK3()]
 WORKERS:8
 LOCAL_SCHEDULER:True
+
+[LOCAL_TASK3()]
+TYPE:LOCAL_TASK
+COMMAND: uptime
+SUCCESS_EXIT_CODE: 0
+REQUIRES: [LOCAL_TASK1(),LOCAL_TASK2()]
+RESULTS: ./three_local_tasks/LOCAL_TASK3.txt
+CLEANUP: True
 
 [LOCAL_TASK1()]
 TYPE:LOCAL_TASK
 COMMAND: ls -ltrh
 SUCCESS_EXIT_CODE: 0
-RESULTS: ./two_local_parallel_tasks/LOCAL_TASK1.txt
+RESULTS: ./three_local_tasks/LOCAL_TASK1.txt
 CLEANUP: True
 
 [LOCAL_TASK2()]
 TYPE:LOCAL_TASK
 COMMAND: df -h
 SUCCESS_EXIT_CODE: 0
-RESULTS: ./two_local_parallel_tasks/LOCAL_TASK2.txt
+RESULTS: ./three_local_tasks/LOCAL_TASK2.txt
 CLEANUP: True
 ```
 Execute the blueprint
