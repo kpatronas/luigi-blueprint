@@ -180,3 +180,30 @@ RESULTS: ./three_local_tasks/LOCAL_TASK2.txt
 CLEANUP: True
 ```
 Execute the blueprint
+```
+./blue.py -b three_local_tasks.cfg
+WARN - Task "LOCAL_TASK1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK1()" "REQUIRES" parameter is empty, defaulting to "[]"
+WARN - Task "LOCAL_TASK2()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK2()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "LOCAL_TASK3" of Type: "LOCAL_TASK" Created.
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created.
+INFO - Task: "LOCAL_TASK2" of Type: "LOCAL_TASK" Created.
+INFO - Task: LOCAL_TASK2 - Starting Execution.
+INFO - Task: LOCAL_TASK1 - Starting Execution.
+INFO - Task: LOCAL_TASK2 - Succedeed with exit code: 0 check ./three_local_tasks/LOCAL_TASK2.txt.
+INFO - Task: LOCAL_TASK1 - Succedeed with exit code: 0 check ./three_local_tasks/LOCAL_TASK1.txt.
+INFO - Task: LOCAL_TASK3 - Starting Execution.
+INFO - Task: LOCAL_TASK3 - Succedeed with exit code: 0 check ./three_local_tasks/LOCAL_TASK3.txt.
+INFO - END.
+```
+Explaination of the configuration
+```
+[LOCAL_TASK3()]
+TYPE:LOCAL_TASK
+COMMAND: uptime
+SUCCESS_EXIT_CODE: 0
+REQUIRES: [LOCAL_TASK1(),LOCAL_TASK2()]  <--- we have added the REQUIRES parameter, this parameter defines the tasks that MUST successfully executed before executing this one
+RESULTS: ./three_local_tasks/LOCAL_TASK3.txt
+CLEANUP: True
+```
