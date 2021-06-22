@@ -303,3 +303,77 @@ CLEANUP: True
 HOST: 127.0.0.1   <--- host to execute COMMAND over SSH
 CREDS: MYPASSWORD <--- What credentials to use
 ```
+### Executing a remote task over an SSH proxy
+There are cases that the server might be reachable only over an SSH proxy, blueprint supports SSH proxies
+Do the following changes to the previous configuration file
+```
+[BUILD]
+TASKS: [REMOTE_TASK_1()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[GW1()]
+TYPE: SSH_PROXY
+HOST: 127.0.0.1
+PORT: 22
+CREDS: MYPASSWORD
+
+[MYPASSWORD]
+TYPE: CREDS
+USER: kpatronas
+PASS: mypassword
+KEY: /home/kpatronas/.ssh/id_rsa.pub
+
+[REMOTE_TASK_1()]
+RESULTS: ./remote_task1/ouput.txt
+SUCCESS_EXIT_CODE: 0
+TYPE:REMOTE_TASK
+COMMAND: /bin/ls -la
+CLEANUP: True
+HOST: 127.0.0.1
+CREDS: MYPASSWORD
+USE_PROXY: True
+PROXY: GW1()
+```
+Execute the blueprint
+```
+./blue.py -b ./single_remote_task.cfg
+WARN - Task "REMOTE_TASK_1()" Has no "PORT" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "PORT" parameter is empty, defaulting to "22"
+WARN - Task "REMOTE_TASK_1()" Has no "TIMEOUT" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "TIMEOUT" parameter is empty, defaulting to "10"
+WARN - Task "REMOTE_TASK_1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "REMOTE_TASK_1" of Type: "REMOTE_TASK" Previous result: "./remote_task1/ouput.txt" Deleted.
+INFO - Task: "REMOTE_TASK_1" of Type: "REMOTE_TASK" Created.
+INFO - Task: "REMOTE_TASK_1" - SSH Connect to Proxy: "GW1()".
+INFO - Task: "REMOTE_TASK_1" - SSH Connect to host: "127.0.0.1".
+INFO - Task: "REMOTE_TASK_1" - host: "127.0.0.1 Executing".
+INFO - Task: REMOTE_TASK_1 - Succedeed with exit code: 0 check ./remote_task1/ouput.txt.
+INFO - END.
+```
+Explaintion of the blueprint
+```
+[GW1()]
+TYPE: SSH_PROXY  <--- This is the SSH Proxy configuration section
+HOST: 127.0.0.1
+PORT: 22
+CREDS: MYPASSWORD
+
+[MYPASSWORD]
+TYPE: CREDS
+USER: kpatronas
+PASS: mypassword
+KEY: /home/kpatronas/.ssh/id_rsa.pub
+
+[REMOTE_TASK_1()]
+RESULTS: ./remote_task1/ouput.txt
+SUCCESS_EXIT_CODE: 0
+TYPE:REMOTE_TASK
+COMMAND: /bin/ls -la
+CLEANUP: True
+HOST: 127.0.0.1
+CREDS: MYPASSWORD
+USE_PROXY: True  <--- If True will use whatever PROXY is set bellow
+PROXY: GW1()
+```
