@@ -19,7 +19,7 @@ Create directory single_local_task
 ```
 mkdir single_local_task
 ```
-__Save the following file as: single_exec.cfg__
+Save the following file as: single_exec.cfg
 ```
 [BUILD]
 TASKS: [LOCAL_TASK1()]
@@ -32,4 +32,29 @@ COMMAND: ls -ltrh
 SUCCESS_EXIT_CODE: 0
 RESULTS: ./single_local_task/LOCAL_TASK1.txt
 CLEANUP: True
+```
+Execute the blueprint
+```
+./blue.py -b single_local_task.cfg
+WARN - Task "LOCAL_TASK1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK1()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Previous result: "./single_local_task/LOCAL_TASK1.txt" Deleted.
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created.
+INFO - Task: LOCAL_TASK1 - Starting Execution.
+INFO - Task: LOCAL_TASK1 - Succedeed with exit code: 0 check ./single_local_task/LOCAL_TASK1.txt.
+INFO - END.
+```
+Explaination of single_exec.cfg parameters
+```
+[BUILD]                  <--- This is a mandatory section in all Blueprint configurations
+TASKS: [LOCAL_TASK1()]   <--- The tasks that will be executed
+WORKERS:8                <--- Maximum number of parallel tasks
+LOCAL_SCHEDULER:True     <--- More in this later
+
+[LOCAL_TASK1()]                               <--- The name of the task
+TYPE:LOCAL_TASK                               <--- Type of the task, LOCAL_TASK is a task that will be executed localhost
+COMMAND: ls -ltrh                             <--- The command/script to be executed.
+SUCCESS_EXIT_CODE: 0                          <--- if the exit code of the command/script equals SUCCESS_EXIT_CODE then task is successfull 
+RESULTS: ./single_local_task/LOCAL_TASK1.txt  <--- Where to write stdout/stderr
+CLEANUP: True                                 <--- if previous run "RESULTS" file exists will be deleted if 'True', setting this to 'False' will not delete it.
 ```
