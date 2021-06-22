@@ -58,3 +58,41 @@ SUCCESS_EXIT_CODE: 0                          <--- if the exit code of the comma
 RESULTS: ./single_local_task/LOCAL_TASK1.txt  <--- Where to write stdout/stderr
 CLEANUP: True                                 <--- if previous run "RESULTS" file exists will be deleted if 'True', setting this to 'False' will not delete it.
 ```
+### Executing a single local task that will fail intentionally
+Save the following as single_local_task_fails.cfg, COMMAND: BORN2FAIL probably does not exist in any system.
+```
+[BUILD]
+TASKS: [LOCAL_TASK1()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[LOCAL_TASK1()]
+TYPE:LOCAL_TASK
+COMMAND: BORN2FAIL
+SUCCESS_EXIT_CODE: 0
+RESULTS: ./single_local_task/LOCAL_TASK1.txt
+CLEANUP: True
+```
+Execute the blueprint
+```
+./blue.py -b single_local_task_fails.cfg
+WARN - Task "LOCAL_TASK1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK1()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created.
+INFO - Task: LOCAL_TASK1 - Starting Execution.
+ERROR - Task: LOCAL_TASK1 - Failed with exit code: 127 check ./single_local_task/LOCAL_TASK1.txt.stderr.
+INFO - END.
+```
+Explaination of the output
+```
+WARN - Task "LOCAL_TASK1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK1()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created.
+INFO - Task: LOCAL_TASK1 - Starting Execution.
+ERROR - Task: LOCAL_TASK1 - Failed with exit code: 127 check ./single_local_task/LOCAL_TASK1.txt.stderr. <--- This command failed with exit status 127 and the stderr is saved
+INFO - END.
+```
+The contents of ./single_local_task/LOCAL_TASK1.txt.stderr are
+```
+/bin/sh: 1: BORN2FAIL: not found
+```
