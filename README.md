@@ -207,3 +207,38 @@ REQUIRES: [LOCAL_TASK1(),LOCAL_TASK2()]  <--- we have added the REQUIRES paramet
 RESULTS: ./three_local_tasks/LOCAL_TASK3.txt
 CLEANUP: True
 ```
+### CLEANUP parameter and executing a task, how it works
+As we said before the CLEANUP parameter deletes the previous RESULTS file if set to 'True', but you must be aware that at task which its previous RESULTS file is not deleted the task will not be executed! this might sound odd, but its very helpfull in cases which a long running blueprint has been failed and needs to re-run but its not needed to run all tasks, which might be time consuming.
+Do the following modification in the previous example, set the CLEANUP parameter of task LOCAL_TASK1() to False
+```
+[LOCAL_TASK1()]
+TYPE:LOCAL_TASK
+COMMAND: ls -ltrh
+SUCCESS_EXIT_CODE: 0
+RESULTS: ./three_local_tasks/LOCAL_TASK1.txt
+CLEANUP: False
+```
+Execute the blueprint
+```
+./blue.py -b three_local_tasks.cfg
+WARN - Task "LOCAL_TASK1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK1()" "REQUIRES" parameter is empty, defaulting to "[]"
+WARN - Task "LOCAL_TASK2()" Has no "REQUIRES" parameter, creating.
+WARN - Task "LOCAL_TASK2()" "REQUIRES" parameter is empty, defaulting to "[]"
+INFO - Task: "LOCAL_TASK3" of Type: "LOCAL_TASK" Previous result: "./three_local_tasks/LOCAL_TASK3.txt" Deleted.
+INFO - Task: "LOCAL_TASK3" of Type: "LOCAL_TASK" Created.
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Previous result: "./three_local_tasks/LOCAL_TASK1.txt" Not Deleted.
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created But Will Not Run Because Previous Result Exists.
+INFO - Task: "LOCAL_TASK2" of Type: "LOCAL_TASK" Previous result: "./three_local_tasks/LOCAL_TASK2.txt" Deleted.
+INFO - Task: "LOCAL_TASK2" of Type: "LOCAL_TASK" Created.
+INFO - Task: LOCAL_TASK2 - Starting Execution.
+INFO - Task: LOCAL_TASK2 - Succedeed with exit code: 0 check ./three_local_tasks/LOCAL_TASK2.txt.
+INFO - Task: LOCAL_TASK3 - Starting Execution.
+INFO - Task: LOCAL_TASK3 - Succedeed with exit code: 0 check ./three_local_tasks/LOCAL_TASK3.txt.
+INFO - END.
+```
+Explaination of the output
+```
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Previous result: "./three_local_tasks/LOCAL_TASK1.txt" Not Deleted. <--- CLEANUP: False means that the RESULTS file will not be deleted
+INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created But Will Not Run Because Previous Result Exists. <--- Because previous RESULTS file exists, task will not be executed.
+```
