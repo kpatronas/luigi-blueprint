@@ -242,3 +242,64 @@ Explaination of the output
 INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Previous result: "./three_local_tasks/LOCAL_TASK1.txt" Not Deleted. <--- CLEANUP: False means that the RESULTS file will not be deleted
 INFO - Task: "LOCAL_TASK1" of Type: "LOCAL_TASK" Created But Will Not Run Because Previous Result Exists. <--- Because previous RESULTS file exists, task will not be executed.
 ```
+### Executing a single remote task
+Luigi Blueprint can execute tasks over SSH as well
+Create directory remote_task1
+```
+mkdir remote_task1
+```
+Save the following file as single_remote_task.cfg
+```
+[BUILD]
+TASKS: [REMOTE_TASK_1()]
+WORKERS:8
+LOCAL_SCHEDULER:True
+
+[MYPASSWORD]
+TYPE: CREDS
+USER: kpatronas
+PASS: mypassword
+KEY: /home/kpatronas/.ssh/id_rsa.pub
+
+[REMOTE_TASK_1()]
+RESULTS: ./remote_task1/ouput.txt
+SUCCESS_EXIT_CODE: 0
+TYPE:REMOTE_TASK
+COMMAND: /bin/ls -la
+CLEANUP: True
+HOST: 127.0.0.1
+CREDS: MYPASSWORD
+```
+Execute the blueprint
+```
+./blue.py -b ./single_remote_task.cfg
+WARN - Task "REMOTE_TASK_1()" Has no "PORT" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "PORT" parameter is empty, defaulting to "22"
+WARN - Task "REMOTE_TASK_1()" Has no "TIMEOUT" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "TIMEOUT" parameter is empty, defaulting to "10"
+WARN - Task "REMOTE_TASK_1()" Has no "REQUIRES" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "REQUIRES" parameter is empty, defaulting to "[]"
+WARN - Task "REMOTE_TASK_1()" Has no "USE_PROXY" parameter, creating.
+WARN - Task "REMOTE_TASK_1()" "USE_PROXY" parameter is empty, defaulting to "False"
+INFO - Task: "REMOTE_TASK_1" of Type: "REMOTE_TASK" Created.
+INFO - Task: "REMOTE_TASK_1" - SSH Connect to host: "127.0.0.1".
+INFO - Task: REMOTE_TASK_1 - Succedeed with exit code: 0 check ./remote_task1/ouput.txt.
+INFO - END.
+```
+Explaination of the parameters
+```
+[MYPASSWORD]     <--- This is a credentials session
+TYPE: CREDS      <--- Has always a type of CREDS
+USER: kpatronas  <--- The username
+PASS: mypassword <--- The password
+KEY: /home/kpatronas/.ssh/id_rsa.pub <--- The private key, note that password or key are optional but, one of them must exist
+
+[REMOTE_TASK_1()]
+RESULTS: ./remote_task1/ouput.txt
+SUCCESS_EXIT_CODE: 0
+TYPE:REMOTE_TASK     <--- REMOTE_TASK is the type of tasks over SSH
+COMMAND: /bin/ls -la
+CLEANUP: True
+HOST: 127.0.0.1   <--- host to execute COMMAND over SSH
+CREDS: MYPASSWORD <--- What credentials to use
+```
