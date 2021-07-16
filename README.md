@@ -1,17 +1,31 @@
-# luigi-blueprint
-Create Luigi ETL Flows Without Any Code!
+## What is luigi-blueprint?
 
-## What is Luigi Blueprint?
-People that want to migrate their ETL to Luigi usually had some scripts glued together, migrating those scripts to Luigi requires to re-write all your scripts to Python, which requires coding effort and testing. Luigi Blueprint is a tool that uses the powers of Luigi to handle the queing and parallelization of the tasks but in the same time does not require to add any new code.
+Luigi-blueprint is a wrapper for the famous Spotify luigi ETL, it adds the capability to create ETL flows by using all ready-made scripts, 
+glue them using an ini configuration file and add luigi superpowers like task parallelization, dependency management, option to execute only not completed tasks in case of a previous failure abilities and the luigi web-ui
 
-## How it works?
-Luigi Blueprint uses ini configuration style files that define each individual task that will be executed and the flow of tasks execution as well, Luigi Blueprint is essential a wrapper for the following kind of ETL tasks.
 
-* Execution of SQL Queries against Databases
-* Execution of Local commands and scripts
-* Execution of Remote commands and and scripts 
+## How luigi-blueprint can help
 
-The above wrappers allows you to organize your existing SQL queries, commands and scripts to organized under a configuration file, achieving the same ETL flow as you had using a traditional shell script but with the additional functionality of effortless executing tasks in parallel (when is possible)
+Most organizations that don’t adopt an ETL technology from their beginning usually use various scripts, it works but as time passes it becomes increasingly difficult to keep this organized and versioned, but the big problems start when the amount of data to be processed has grown so much 
+That a form of task parallelization is needed, usually the next logical step is to adopt an ETL framework but this creates new needs like:
+
+* Re-architecture the ETL flow
+* Convert or Create Scripts to be used with the ETL
+* Testing
+
+All the above can be a problem that might slowdown the migration to the ETL framework or even halt forever the deployment, luigi-blueprint can act as an interim solution to all that because of the following capabilities
+
+* Can use already existing scripts without modifications, the scripts do not need to be written in Python can even be compiled binaries
+* You can get rid off scripts that just execute SQL queries and get back results as a CSV/XLS luigi-blueprint has already built-in capabilities to execute SQL queries and it can work with whatever database Python SQLAlchemy supports (virtually everything)
+* It can execute local and remote scripts / commands and decide if the result was successful based on the command exit code
+* Supports connecting to remote hosts / databases over an SSH proxy
+* Supports SSH keys / plain passwords
+* Parallelization of the tasks can be done by describing the task dependencies and which tasks can run in parallel
+* There is the option not to run all tasks from the begin in case of a task’s failure
+* Web interface to check tasks execution status
+* All the above can be done with a simple ini configuration file
+
+This way you can have all the benefits of an ETL without the need to convert your scripts and minimize the testing phase because the scripts are already proven to work.
 
 ## Examples
 ### Executing a single local task
